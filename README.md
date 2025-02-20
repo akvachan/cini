@@ -8,7 +8,7 @@ sudo cp cini /usr/local/bin/
 ```
 
 ## WARNING
-Tool is not tested, is experimental and intended for person use only.
+Tool is not properly tested, experimental and intended for personal use only.
 
 ## NAME
 `cini` - project initializer tool

@@ -17,9 +17,11 @@ int main(int argc, char *argv[]) {
                  "[compiler] [strict_compiler] [build_system] [init_git_repo] "
                  "[documentation] [test]\n";
     std::cerr << "Or use flagged mode:\n";
-    std::cerr << "  cini [project_name or --name=<name>] [--link=static|dynamic] "
-                 "[--lang=c++|c] [--compiler=clang++|...]\n";
-    std::cerr << "       [--strict=0|1|2] [--build=cmake|make] [--git] [--docs] [--test]\n";
+    std::cerr
+        << "  cini [project_name or --name=<name>] [--link=static|dynamic] "
+           "[--lang=c++|c] [--compiler=clang++|...]\n";
+    std::cerr << "       [--strict=0|1|2] [--build=cmake|make] [--git] "
+                 "[--docs] [--test]\n";
     return 1;
   }
 
@@ -27,14 +29,13 @@ int main(int argc, char *argv[]) {
   std::string projectArg = "";
   std::string linking = "static";
   std::string language = "c++";
-  std::string compiler = "clang++"; // default compiler is now clang++
-  int strict_compiler = 1;          // default is 1; 2 adds extra warnings & sanitizers
+  std::string compiler = "clang++";
+  int strict_compiler = 1;
   std::string build_system = "cmake";
-  bool init_git_repo = true;        // default: initialize git repo
-  bool documentation = true;        // default: generate documentation files
-  bool test_flag = false;           // default: no tests
+  bool init_git_repo = true;
+  bool documentation = true;
+  bool test_flag = false;
 
-  // Determine if any argument is flagged (starts with "--")
   bool flaggedMode = false;
   for (int i = 1; i < argc; ++i) {
     std::string arg(argv[i]);
@@ -43,7 +44,6 @@ int main(int argc, char *argv[]) {
   }
 
   if (flaggedMode) {
-    // Flagged mode parsing: defaults remain as above if flags are omitted.
     for (int i = 1; i < argc; ++i) {
       std::string arg(argv[i]);
       if (startsWith(arg, "--name=")) {
@@ -65,7 +65,6 @@ int main(int argc, char *argv[]) {
       } else if (arg == "--test") {
         test_flag = true;
       } else if (!startsWith(arg, "--") && projectArg.empty()) {
-        // First non-flag argument as project name if --name was not provided.
         projectArg = arg;
       }
     }
@@ -75,7 +74,6 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   } else {
-    // Positional mode parsing
     projectArg = argv[1];
     if (argc > 2)
       linking = argv[2];
@@ -84,24 +82,24 @@ int main(int argc, char *argv[]) {
     if (argc > 4)
       compiler = argv[4];
     if (argc > 5)
-      strict_compiler = std::stoi(argv[5]); // default 1 if missing
+      strict_compiler = std::stoi(argv[5]);
     if (argc > 6)
       build_system = argv[6];
     if (argc > 7)
       init_git_repo = (std::string(argv[7]) == "yes");
     else
-      init_git_repo = true; // default "yes" in positional mode
+      init_git_repo = true;
     if (argc > 8)
       documentation = (std::string(argv[8]) == "yes");
     else
-      documentation = true; // default "yes"
+      documentation = true;
     if (argc > 9)
       test_flag = (std::string(argv[9]) == "yes");
     else
-      test_flag = false; // default "no"
+      test_flag = false;
   }
 
-  // Determine project directory and name:
+  // Determine project directory and name
   fs::path projectPath;
   std::string projectName;
   if (projectArg == ".") {
@@ -126,7 +124,6 @@ int main(int argc, char *argv[]) {
   fs::create_directories(projectPath / "vendor");
   fs::create_directories(projectPath / "build");
 
-  // Create main file in src/ (main.cpp for C++ or main.c for C)
   fs::path mainFile;
   if (language == "c") {
     mainFile = projectPath / "src" / "main.c";
@@ -137,7 +134,7 @@ int main(int argc, char *argv[]) {
                << "    return 0;\n"
                << "}\n";
     mainStream.close();
-  } else { // default is C++
+  } else {
     mainFile = projectPath / "src" / "main.cpp";
     std::ofstream mainStream(mainFile);
     mainStream << "#include <iostream>\n\n"
@@ -148,7 +145,6 @@ int main(int argc, char *argv[]) {
     mainStream.close();
   }
 
-  // Prepare linking flag (if dynamic linking is chosen, add -shared)
   std::string linkingFlag = "";
   if (linking == "dynamic") {
     linkingFlag = " -shared";
@@ -156,7 +152,6 @@ int main(int argc, char *argv[]) {
 
   // Create build system files in the project root.
   if (build_system == "make") {
-    // Generate a Makefile with targets: build, run, and clear.
     fs::path makefile = projectPath / "Makefile";
     std::ofstream makeStream(makefile);
     std::string srcFile = (language == "c" ? "main.c" : "main.cpp");
@@ -166,25 +161,25 @@ int main(int argc, char *argv[]) {
     } else if (strict_compiler == 2) {
       flags = " -Wall -Wextra -pedantic -fsanitize=address";
     }
-    
-    // Build command including debug symbols (-g) and proper standard flag:
+
     std::string compileCommand;
     if (language == "c") {
-      compileCommand = compiler + flags + linkingFlag + " -g -std=c11 -o build/" +
-                       projectName + " src/" + srcFile;
+      compileCommand = compiler + flags + linkingFlag +
+                       " -g -std=c11 -o build/" + projectName + " src/" +
+                       srcFile;
     } else {
-      compileCommand = compiler + flags + linkingFlag + " -g -std=c++23 -o build/" +
-                       projectName + " src/" + srcFile;
+      compileCommand = compiler + flags + linkingFlag +
+                       " -g -std=c++23 -o build/" + projectName + " src/" +
+                       srcFile;
     }
-    
-    // Write the Makefile with the desired targets.
+
     makeStream << ".PHONY: build run clear\n\n";
     makeStream << "build:\n\t" << compileCommand << "\n\n";
     makeStream << "run: build\n\t./build/" << projectName << "\n\n";
     makeStream << "clear:\n\t@rm -f build/" << projectName << "\n";
     makeStream.close();
-  } else { // cmake build system
-    // Create CMakeLists.txt in the project root.
+
+  } else { 
     fs::path cmakeFile = projectPath / "CMakeLists.txt";
     std::ofstream cmakeStream(cmakeFile);
     cmakeStream << "cmake_minimum_required(VERSION 3.10)\n";
@@ -195,14 +190,13 @@ int main(int argc, char *argv[]) {
       cmakeStream << "enable_language(CXX)\n";
     }
     cmakeStream << "set(CMAKE_BUILD_TYPE Debug)\n";
-    // Export compile_commands.json for IDEs/LSPs
     cmakeStream << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n";
-    // Set compiler flags based on strictness:
     if (language == "c") {
       if (strict_compiler == 1) {
         cmakeStream << "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall\")\n";
       } else if (strict_compiler == 2) {
-        cmakeStream << "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall -Wextra -pedantic -fsanitize=address\")\n";
+        cmakeStream << "set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS} -Wall -Wextra "
+                       "-pedantic -fsanitize=address\")\n";
       }
       cmakeStream << "set(CMAKE_C_STANDARD 11)\n";
       cmakeStream << "set(CMAKE_C_STANDARD_REQUIRED ON)\n";
@@ -210,21 +204,20 @@ int main(int argc, char *argv[]) {
       if (strict_compiler == 1) {
         cmakeStream << "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Wall\")\n";
       } else if (strict_compiler == 2) {
-        cmakeStream << "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -fsanitize=address\")\n";
+        cmakeStream << "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Wall -Wextra "
+                       "-pedantic -fsanitize=address\")\n";
       }
       cmakeStream << "set(CMAKE_CXX_STANDARD 23)\n";
       cmakeStream << "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n";
     }
-    // Add executable target.
     std::string srcFile = (language == "c" ? "src/main.c" : "src/main.cpp");
     cmakeStream << "add_executable(" << projectName << " " << srcFile << ")\n";
-    // Include inc/ directory
-    cmakeStream << "target_include_directories(" << projectName << " PRIVATE inc)\n";
-    // Set dynamic linking if requested.
+    cmakeStream << "target_include_directories(" << projectName
+                << " PRIVATE inc)\n";
     if (linking == "dynamic") {
-      cmakeStream << "set_target_properties(" << projectName << " PROPERTIES LINK_FLAGS \"-shared\")\n";
+      cmakeStream << "set_target_properties(" << projectName
+                  << " PROPERTIES LINK_FLAGS \"-shared\")\n";
     }
-    // If tests are enabled (and language is C++), add testing
     if (language != "c" && test_flag) {
       cmakeStream << "enable_testing()\n";
       cmakeStream << "add_subdirectory(test)\n";
@@ -232,7 +225,7 @@ int main(int argc, char *argv[]) {
     cmakeStream.close();
   }
 
-  // Create test directory and sample test file if language is C++ and tests enabled.
+  // Create test directory and sample test file if language is C++ and tests
   if (language != "c" && test_flag) {
     fs::create_directories(projectPath / "test");
     fs::path testFile = projectPath / "test" / "test.cpp";
@@ -252,7 +245,6 @@ int main(int argc, char *argv[]) {
   if (init_git_repo) {
     std::string command = "cd " + projectPath.string() + " && git init";
     system(command.c_str());
-    // Create a .gitignore with common C/C++ ignores.
     fs::path gitignoreFile = projectPath / ".gitignore";
     std::ofstream gitignoreStream(gitignoreFile);
     gitignoreStream << "# Compiled object files\n"

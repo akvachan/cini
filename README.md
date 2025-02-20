@@ -3,6 +3,7 @@
 ## INSTALLATION 
 
 ```bash
+git clone https://github.com/akvachan/cini.git && cd cini
 c++ -std=c++23 cini.cpp -o cini
 sudo cp cini /usr/local/bin/
 ```

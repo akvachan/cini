@@ -1,6 +1,8 @@
 # cini
 
-## INSTALLATION 
+`cini` is a command-line utility that bootstraps a new project by creating a predefined directory structure, generating build system files, and optionally initializing a Git repository, setting up documentation, and configuring testing. It supports two modes of operation
+
+## Installation
 
 ```bash
 git clone https://github.com/akvachan/cini.git && cd cini
@@ -8,21 +10,10 @@ c++ -std=c++23 cini.cpp -o cini
 sudo cp cini /usr/local/bin/
 ```
 
-## WARNING
+## Warning
 Tool is not properly tested, experimental and intended for personal use only.
 
-## NAME
-`cini` - project initializer tool
-
-## SYNOPSIS
-```sh
-cini <project_name> [OPTIONS]
-```
-
-## DESCRIPTION
-`cini` is a command-line utility that bootstraps a new project by creating a predefined directory structure, generating build system files, and optionally initializing a Git repository, setting up documentation, and configuring testing. It supports two modes of operation:
-
-### Positional Mode:
+## Usage
 Provide the project name as the first argument, followed by optional parameters in order:
 
 ```sh
@@ -39,7 +30,6 @@ Provide the project name as the first argument, followed by optional parameters 
 - **`<documentation>`** - `yes` (default) or `no`.
 - **`<test>`** - `no` (default) or `yes`.
 
-### Flagged Mode:
 Alternatively, options can be provided via flags:
 
 ```sh
@@ -56,7 +46,7 @@ Alternatively, options can be provided via flags:
 
 Any omitted flag will use the default value specified above. The project name must be provided either as the first positional argument or with the `--name` flag.
 
-## OPTIONS
+## Mini docs
 
 ### `--name=<project_name>`
 Specifies the name of the project.

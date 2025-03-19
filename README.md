@@ -1,6 +1,6 @@
 # cini
 
-`cini` is a command-line utility that bootstraps a new C/C++ project by creating a predefined directory structure, generating build system files, and optionally initializing a Git repository, setting up documentation, and configuring testing. It supports two modes of operation
+`cini` is a command-line utility that bootstraps a new C/C++ project by creating a predefined directory structure, generating build system files, and optionally initializing a Git repository, setting up documentation, and configuring testing.
 
 ## Installation
 

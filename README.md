@@ -80,7 +80,7 @@ Generates documentation files (e.g., a Doxyfile) for the project.
 ### `--test`
 Creates a test directory with a sample test file for basic assertions.
 
-## EXAMPLES
+## Examples
 
 ### Example 1:
 Initialize a new project called `MyProject` using flagged mode with defaults:
